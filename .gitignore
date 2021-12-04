@@ -1,0 +1,12 @@
+node_modules
+*.temp.*
+*/**/*.temp.*
+*/**/input.txt
+*.log
+*/**/*.log
+.idea
+.vscode
+.env
+.aocrunner.json
+.prettierignore
+.prettierrc.json
