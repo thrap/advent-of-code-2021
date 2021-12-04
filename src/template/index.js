@@ -17,13 +17,15 @@ const part2 = (rawInput) => {
 run({
   part1: {
     tests: [
-      // { input: ``, expected: "" },
+      { input:
+``, expected: "" },
     ],
     solution: part1,
   },
   part2: {
     tests: [
-      // { input: ``, expected: "" },
+      { input:
+``, expected: "" },
     ],
     solution: part2,
   },
