@@ -14,18 +14,18 @@ const part2 = (rawInput) => {
   return;
 };
 
+const part1Input = ``
+const part2Input = part1Input
 run({
   part1: {
     tests: [
-      { input:
-``, expected: "" },
+      { input: part1Input, expected: "" },
     ],
     solution: part1,
   },
   part2: {
     tests: [
-      { input:
-``, expected: "" },
+      { input: part2Input, expected: "" },
     ],
     solution: part2,
   },
