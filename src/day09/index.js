@@ -22,17 +22,16 @@ const part1 = (rawInput) => {
 const part2 = (rawInput) => {
   const board = parseInput(rawInput);
   const visited = Array(board.length).fill(true).map(_ => Array(board[0].length).fill(false))
-  const basin = (x, y, v) => {
+  const basin = (x, y) => {
     if (x >= board.length || x < 0 || y >= board[0].length || y < 0)
       return []
     if (visited[x][y])
       return []
     visited[x][y] = true
-    const get = (x,y) => (visited[x]||[])[y] ? undefined : (board[x]||[])[y]
+    const get = (x,y) => !(visited[x]||[])[y] && (board[x]||[])[y]
     const dirs = [[x+1,y],[x-1,y],[x,y+1],[x,y-1]]
-    const points = dirs.filter(([a,b]) => get(a,b) != undefined && get(a,b) != 9 && get(a,b) >= v);
-    const all = [[x,y]].concat(points.reduce((acc, [a, b]) => acc.concat(basin(a,b, board[a][b])), []))
-    return all
+    const points = dirs.filter(([a,b]) => get(a,b) && get(a,b) != 9);
+    return [[x,y]].concat(points.reduce((acc, [a, b]) => acc.concat(basin(a,b)), []))
   }
   var l = []
   for (var x = 0; x < board.length; x++) {
@@ -44,8 +43,7 @@ const part2 = (rawInput) => {
       var isLow = points.reduce((acc, value) => acc && value > v, true)
 
       if (isLow) {
-        const b = basin(x, y, v)
-        l.push(b.length)
+        l.push(basin(x, y).length)
       }
     }
   }
