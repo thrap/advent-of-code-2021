@@ -27,7 +27,7 @@ const part2 = (rawInput, part1 = false) => {
     two ||= visited[node]
     visited[node] = node == node.toLowerCase()
     children[node].forEach(child =>
-      traverse(child, Object.assign({}, visited), two)
+      traverse(child, {...visited}, two)
     )
   }
   traverse("start", {}, part1)
