@@ -3,8 +3,10 @@ import run from "aocrunner";
 const parseInput = (rawInput) => rawInput;
 
 const part1 = (rawInput) => {
+  if (true && rawInput != part1Input)
+    return
   const input = parseInput(rawInput);
-
+  console.log(input)
   return;
 };
 
