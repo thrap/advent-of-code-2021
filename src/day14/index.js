@@ -63,13 +63,13 @@ const part2 = (rawInput) => {
   }
 
   const count = {}
-  Object.keys(map).map(pair => pair.split("")).forEach(([a, b]) => {
-    count[a] = (count[a]||0) + map[a+b]
-    count[b] = (count[b]||0) + map[a+b]
+  Object.keys(map).map(pair => {
+    const a = pair[0]
+    count[a] = (count[a]||0) + map[pair]
   })
+  count[template.substr(-1)]++
 
-  //every c in pair has been counted twice (except for the first and the last pair)
-  var vals = Object.keys(count).map(key => (count[key]+count[key]%2)/2)
+  var vals = Object.values(count)
 
   return Math.max(...vals) - Math.min(...vals);
 };
