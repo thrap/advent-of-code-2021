@@ -3,7 +3,7 @@ import run from "aocrunner";
 const parseInput = (rawInput) => rawInput.split("\n").map(row => row.split(""));
 
 const spots = [[1,1],[1,2],[1,4],[1,6],[1,8],[1,10],[1,11]]
-const rooms = [[2,3],[3,3],[2,5],[3,5],[2,7],[3,7],[2,9],[3,9]]
+const rooms = [[2,3],[3,3],[4,3],[5,3],[2,5],[3,5],[4,5],[5,5],[2,7],[3,7],[4,7],[5,7],[2,9],[3,9],[4,9],[5,9]]
 const all = spots.concat(rooms)
 const openSpots = (board) => {
   return spots.filter(([x,y]) => board[x][y] == '.')
@@ -19,6 +19,9 @@ var GOAL = parseInput(GOALSTR)
 const canMoveTo = (board, [i0,j0], [iGoal,jGoal]) => {
   if (i0 == 1 && iGoal == 1)
     return false
+  if (iGoal >= GOAL.length)
+    return false
+
   if (GOAL[iGoal][jGoal] != "." && GOAL[iGoal][jGoal] != board[i0][j0]) {
     return false
   }
@@ -45,13 +48,47 @@ const canMoveTo = (board, [i0,j0], [iGoal,jGoal]) => {
     return steps
   }
   if (i + 1 == iGoal) {
-    if (board[i + 1][j] == "." && board[i + 2][j] == GOAL[i + 2][j])
+    if (
+      board[i + 1][j] == "." &&
+      board[i + 2][j] == GOAL[i + 2][j] &&
+      board[i + 3][j] == GOAL[i + 3][j] &&
+      (board[i + 4]||[])[j] == (GOAL[i + 4]||[])[j]
+    ) {
       return steps + 1
+    }
     return false
   }
   else if (i + 2 == iGoal) {
-    if (board[i + 1][j] == "." && board[i + 2][j] == ".")
+    if (
+      board[i + 1][j] == "." &&
+      board[i + 2][j] == "." &&
+      board[i + 3][j] == GOAL[i + 3][j] &&
+      (board[i + 4]||[])[j] == (GOAL[i + 4]||[])[j]
+    ) {
       return steps + 2
+    }
+    return false
+  }
+  else if (i + 3 == iGoal) {
+    if (
+      board[i + 1][j] == "." &&
+      board[i + 2][j] == "." &&
+      board[i + 3][j] == "." &&
+      (board[i + 4]||[])[j] == (GOAL[i + 4]||[])[j]
+    ) {
+      return steps + 3
+    }
+    return false
+  }
+  else if (i + 4 == iGoal) {
+    if (
+      board[i + 1][j] == "." &&
+      board[i + 2][j] == "." &&
+      board[i + 3][j] == "." &&
+      (board[i + 4]||[])[j] == "."
+    ) {
+      return steps + 4
+    }
     return false
   }
 
@@ -64,7 +101,7 @@ const print = (board) => {
 }
 const toString = (board) => board.map(row => row.join("")).join("\n")
 const copyBoard = (board) => {
-  return parseInput(toString(board))
+  return board.map(x => [...x])
 }
 
 const score = {
@@ -76,8 +113,13 @@ const score = {
 
 const manhattan = (board) => {
   var sum = 0
-  all.filter(([x,y]) => board[x][y] != ".").forEach(([x, y]) => {
-    const c = board[x][y]
+
+  // her kan jeg få den ganske mye strengere
+  all.forEach(([x, y]) => {
+    const c = (board[x]||[])[y]
+    if (c != "A" && c != "B" && c != "C" && c != "D")
+      return
+
 
     const asd = x
     if (c == "D") {
@@ -97,6 +139,11 @@ const manhattan = (board) => {
       if (yDiff != 0)
         sum += 10*(yDiff+asd)
     }
+    if (c == "A") {
+      const yDiff = Math.abs(y-3)
+      if (yDiff != 0)
+        sum += (yDiff+asd)
+    }
   })
   return sum
 }
@@ -113,20 +160,26 @@ const brute = (boards, added={}) => {
   //print(board)
   var i = 0
   while (!found) {
-    boards.sort((a, b) => (b[0]+b[1])-(a[0]+a[1]))
     var found = false
     const [weight, h, board] = boards.pop()
     if (++i % 1000 == 0) {
-      console.log(i, weight + h)
+      console.log(i, weight + h, boards.length)
     }
-    const chars = all.filter(([x,y]) => board[x][y] != ".")
-    chars.forEach((start) => {
-      all.forEach((goal) => {
+    const chars = all
+
+    for (var j = 0; j < chars.length; j++) {
+      const start = chars[j]
+      var [x0, y0] = start
+      const c = (board[x0]||[])[y0]
+      if (c != "A" && c != "B" && c != "C" && c != "D")
+        continue
+
+      for (var k = 0; k < all.length; k++) {
+        const goal = all[k]
         const steps = canMoveTo(board, start, goal)
         if (!steps)
-          return false
+          continue
         var [x, y] = goal
-        var [x0, y0] = start
         const cost = steps*score[board[x0][y0]]
         var newBoard = copyBoard(board)
         newBoard[x0][y0] = '.'
@@ -139,26 +192,40 @@ const brute = (boards, added={}) => {
           found = weight + cost
         }
         if (!added[toStr]) {
-          boards.push([weight + cost, manhattan(newBoard), newBoard])
+          var man = manhattan(newBoard)
+          var newCost = man + weight + cost
+          var i = 0
+          for(; i < boards.length; i++) {
+            if (boards[i][0]+boards[i][1] < newCost)
+              break
+          }
+          boards.splice(i, 0, [weight + cost, man, newBoard])
           added[toStr] = true
         }
-      })
-    })
+      }
+    }
   }
   return found
 }
 
 const part1 = (rawInput) => {
   const board = parseInput(rawInput);
+  GOALSTR = `#############
+#...........#
+###A#B#C#D###
+  #A#B#C#D#
+  #########`
+  GOAL = parseInput(GOALSTR)
   return brute([[0, manhattan(board), board]])
 };
 
 const part2 = (rawInput) => {
-  /*const asd = rawInput.split("\n")
+  const asd = rawInput.split("\n")
   asd.splice(3, 0, "  #D#C#B#A#")
   asd.splice(4, 0, "  #D#B#A#C#")
   console.log(asd)
-  const board = parseInput(rawInput);
+  const board = parseInput(asd.join("\n"));
+  print(board)
 
   GOALSTR = `#############
 #...........#
@@ -167,9 +234,9 @@ const part2 = (rawInput) => {
   #A#B#C#D#
   #A#B#C#D#
   #########`
-  GOAL = parseInput(GOALSTR)*/
+  GOAL = parseInput(GOALSTR)
 
-  return;
+  return brute([[0, manhattan(board), board]]);
 };
 
 const part1Input = `#############
@@ -192,7 +259,6 @@ run({
   },
   part2: {
     tests: [
-      { input: part2Input, expected: "" },
     ],
     solution: part2,
   },
